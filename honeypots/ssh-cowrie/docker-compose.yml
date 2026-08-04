@@ -1,11 +1,10 @@
 services:
-    cowrie:
-        image: cowrie
-        container_name: cowrie
-        restart: unless-stopped
-        ports:
+  cowrie:
+    image: cowrie
+    container_name: cowrie
+    restart: unless-stopped
+    ports:
             - "2222:2222"
-        volumes:
+    volumes:
             - ./cowrie-logs:/cowrie/cowrie-git/var/log/cowrie
             - ./cowrie-data:/cowrie/cowrie-git/var/lib/cowrie
-            

@@ -1,0 +1,13 @@
+services:
+  http-decoy:
+    build: .
+    container_name: http-decoy
+
+    restart: unless-stopped
+
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ./logs:/var/log/http-decoy
+      

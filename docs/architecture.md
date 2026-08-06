@@ -9,7 +9,7 @@ The AI Honeynet Lab is an isolated cybersecurity environment designed to safely 
 # Network Architecture
 
 <p align=center>
-    <img src="docs/image/DeceptionX Architecture (Network) (4).png">
+    <img src="../docs/image/DeceptionX Architecture (Network) (4).png">
 </p>
 
 ---

@@ -22,3 +22,18 @@ CREATE TABLE IF NOT EXISTS action(
     result TEXT,
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Action records are audit events.
+-- They are append-only: UPDATE and DELETE are prohibited.
+
+CREATE TRIGGER IF NOT EXISTS prevent_action_update
+BEFORE UPDATE ON action
+BEGIN
+    SELECT RAISE(ABORT, 'audit log is append-only: UPDATE is not allowed');
+END;
+
+CREATE TRIGGER IF NOT EXISTS prevent_action_delete
+BEFORE DELETE ON action
+BEGIN
+    SELECT RAISE(ABORT, 'audit log is append-only: DELETE is not permitted');
+END;

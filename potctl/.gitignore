@@ -1,4 +1,7 @@
-bin/
+# potctl build artifacts
+potctl/bin/
+
+# potctl SQLite runtime files
 potctl/*.db
 potctl/*.db-wal
 potctl/*.db-shm

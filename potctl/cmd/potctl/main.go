@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/codewithMohak/DeceptionX/potctl/internal/api"
+	"github.com/codewithMohak/DeceptionX/potctl/internal/banner"
 	"github.com/codewithMohak/DeceptionX/potctl/internal/docker"
 	"github.com/codewithMohak/DeceptionX/potctl/internal/logging"
 	"github.com/codewithMohak/DeceptionX/potctl/internal/storage"
@@ -13,11 +14,12 @@ import (
 
 func main() {
 	// logging.Init()
-
+	banner.Print()
 	dockerClient, err := docker.New()
 	if err != nil {
 		logging.Log.Fatal().Err(err).Msg("failed to initalize Docker")
 	}
+	banner.Success("Docker initialized")
 
 	dbPath := os.Getenv("POTCTL_DB_PATH")
 	if dbPath == "" {
@@ -31,6 +33,7 @@ func main() {
 			Str("path", dbPath).
 			Msg("failed to initialize storage")
 	}
+	banner.Success("Storage initialized")
 
 	defer store.Close()
 
@@ -38,6 +41,7 @@ func main() {
 	if apiKey == "" {
 		logging.Log.Fatal().Msg("POTCTL_API_KEY is not comfigured")
 	}
+	banner.Success("API authentication configured")
 
 	srv := api.NewServer(
 		dockerClient,
@@ -45,6 +49,8 @@ func main() {
 		logging.Log,
 		apiKey,
 	)
+	banner.Success("API server initialized")
+	
 	server := &http.Server{
 		Addr:              "127.0.0.1:8081",
 		Handler:           srv.Router(),

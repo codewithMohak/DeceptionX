@@ -2,8 +2,8 @@ package storage
 
 import (
 	"database/sql"
+	_ "embed"
 	"fmt"
-	"os"
 
 	_ "modernc.org/sqlite"
 )
@@ -11,6 +11,9 @@ import (
 type Store struct {
 	db *sql.DB
 }
+
+//go:embed schema.sql
+var schemaSQL string
 
 func New(path string) (*Store, error) {
 	db, err := sql.Open("sqlite", path)
@@ -21,7 +24,7 @@ func New(path string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
-	if _, err := db.Exec(`PRAGMA journal_model=WAL`); err != nil {
+	if _, err := db.Exec(`PRAGMA journal_mode=WAL`); err != nil {
 		db.Close()
 		return nil, err
 	}
@@ -33,12 +36,8 @@ func New(path string) (*Store, error) {
 }
 
 func initializeSchema(db *sql.DB) error {
-	schema, err := os.ReadFile("schema.sql")
-	if err != nil {
-		return fmt.Errorf("read schema: %w", err)
-	}
-	if _, err := db.Exec(string(schema)); err != nil {
-		return fmt.Errorf("initialize schema: %w", err)
+	if _, err := db.Exec(schemaSQL); err != nil {
+		return fmt.Errorf("execute schema: %w", err)
 	}
 	return nil
 }
@@ -62,4 +61,8 @@ func (s *Store) RecordAction(
 	)
 
 	return err
+}
+
+func (s *Store) Close() error {
+	return s.db.Close()
 }

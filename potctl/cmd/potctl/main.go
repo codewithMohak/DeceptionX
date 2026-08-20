@@ -1,22 +1,62 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 	"os"
+	"time"
+
+	"github.com/codewithMohak/DeceptionX/potctl/internal/api"
+	"github.com/codewithMohak/DeceptionX/potctl/internal/docker"
+	"github.com/codewithMohak/DeceptionX/potctl/internal/logging"
+	"github.com/codewithMohak/DeceptionX/potctl/internal/storage"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("usage: potctl<command>")
-		os.Exit(1)
-	}
-	
-	switch os.Args[1] {
-	case "version":
-		fmt.Println("potctl v0.0.1")
+	// logging.Init()
 
-	default:
-		fmt.Printf("unknown command %s\n", os.Args[1])
-		os.Exit(1)
+	dockerClient, err := docker.New()
+	if err != nil {
+		logging.Log.Fatal().Err(err).Msg("failed to initalize Docker")
+	}
+
+	dbPath := os.Getenv("POTCTL_DB_PATH")
+	if dbPath == "" {
+		dbPath = "/var/lib/potctl/potctl.db"
+	}
+
+	store, err := storage.New(dbPath)
+	if err != nil {
+		logging.Log.Fatal().
+			Err(err).
+			Str("path", dbPath).
+			Msg("failed to initialize storage")
+	}
+
+	defer store.Close()
+
+	apiKey := os.Getenv("POTCTL_API_KEY")
+	if apiKey == "" {
+		logging.Log.Fatal().Msg("POTCTL_API_KEY is not comfigured")
+	}
+
+	srv := api.NewServer(
+		dockerClient,
+		store,
+		logging.Log,
+		apiKey,
+	)
+	server := &http.Server{
+		Addr:              "127.0.0.1:8081",
+		Handler:           srv.Router(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	logging.Log.Info().Str("action", "api.start").Str("target", "potctl-api").Str("reason", "service startup").Str("actor", "potctl").Str("result", "success").Msg("REST API started")
+
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logging.Log.Fatal().Err(err).Msg("REST API failed")
 	}
 }

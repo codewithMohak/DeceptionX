@@ -1,4 +1,4 @@
 bin/
-potctl/*.db
-potctl/*.db-wal
-potctl/*.db-shm
+potctl\\*.db
+potctl\\*.db-wal
+potctl\\*.db-shm

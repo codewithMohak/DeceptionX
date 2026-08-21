@@ -119,7 +119,7 @@ func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
 
 // toggle
 type toggleRequest struct {
-	Target string `json:"traget"`
+	Target string `json:"target"`
 	Action string `json:"action"`
 	Reason string `json:"reason"`
 }
@@ -151,8 +151,8 @@ func (s *Server) handleToggle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Target == "" || req.Action == "" || req.Reason == "" {
-		s.logRejected("container.toogle", "missing required field")
-		http.Error(w, "traget, action and reason are required", http.StatusBadRequest)
+		s.logRejected("container.toggle", "missing required field")
+		http.Error(w, "target, action and reason are required", http.StatusBadRequest)
 		return
 	}
 

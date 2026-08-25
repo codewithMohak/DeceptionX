@@ -148,7 +148,7 @@ Metrics from scripted attack scenarios (deterministic, stealthy) are tracked in 
 
 ## Roadmap
 
-See [`docs/build-log/`](docs/build-log) for weekly progress notes. Full 16-week research roadmap (persona engine, anti-fingerprinting, Kubernetes scaling, STIX output) is outlined in [`docs/architecture.md`](docs/architecture.md).
+Full 16-week research roadmap (persona engine, anti-fingerprinting, Kubernetes scaling, STIX output) is outlined in [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
@@ -170,4 +170,4 @@ Full breakdown and how each maps to this system's design in [`docs/architecture.
 
 ## Author
 
-Built by [Your Name] — security researcher and engineer. [LinkedIn](#) · [Medium](#)
+Built by Mohak Agarwal — security researcher and engineer. [LinkedIn](https://www.linkedin.com/in/mohak-agarwal/) · [Medium](https://medium.com/@mohakagarwal.sec)

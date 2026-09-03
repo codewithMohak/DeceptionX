@@ -29,7 +29,18 @@ func Watch(
 		return err
 	}
 
-	var offset int64
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	offset, err := file.Seek(0, 2)
+	if err != nil {
+		file.Close()
+		return err
+	}
+
+	file.Close()
 
 	for {
 		select {
@@ -114,4 +125,18 @@ func readNewLines(
 		return offset, err
 	}
 	return currentOffset, nil
+}
+
+func fileOffsetAtEnd(path string) (int64, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	offset, err := file.Seek(0, 2)
+	if err != nil {
+		return 0, err
+	}
+	return offset, nil
 }

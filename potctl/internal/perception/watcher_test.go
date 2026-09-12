@@ -2,9 +2,11 @@ package perception
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestFileOffsetAtEnd(t *testing.T) {
@@ -225,5 +227,99 @@ func TestFileRotation(t *testing.T) {
 			"expected source IP 192.168.1.20, got %s",
 			event.SrcIP,
 		)
+	}
+}
+
+func TestNoDuplicateProcessing(t *testing.T) {
+	dir := t.TempDir()
+
+	path := filepath.Join(dir, "eve.json")
+
+	if err := os.WriteFile(path, nil, 0644); err != nil {
+		t.Fatalf("failed to write eve.json: %v", err)
+	}
+
+	offset, err := fileOffsetAtEnd(path)
+	if err != nil {
+		t.Fatalf("failed to get initial file offset: %v", err)
+	}
+	state := tailState{
+		offset: offset,
+	}
+
+	out := make(chan NormalizedEvent, 10)
+
+	line := `{"timestamp":"2026-09-08T12:00:00Z","event_type":"ssh","src_ip":"10.0.0.5"}` + "\n"
+
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		t.Fatalf("failed to open eve.json: %v", err)
+	}
+
+	if _, err := file.WriteString(line); err != nil {
+		file.Close()
+		t.Fatalf("failed to append event: %v", err)
+	}
+
+	file.Close()
+
+	// Read the newly appended event.
+	if err := readNewLines(context.Background(), path, &state, out); err != nil {
+		t.Fatalf("first read failed: %v", err)
+	}
+
+	select {
+	case event := <-out:
+		if event.SrcIP != "10.0.0.5" {
+			t.Fatalf("unexpected source IP: %s", event.SrcIP)
+		}
+	default:
+		t.Fatal("expected one event after first read")
+	}
+
+	if err := readNewLines(context.Background(), path, &state, out); err != nil {
+		t.Fatalf("second read failed: %v", err)
+	}
+
+	select {
+	case event := <-out:
+		t.Fatalf("unexpected duplicate event: %v", event)
+
+	default:
+
+	}
+
+}
+
+func TestWatchGracefulShutdown(t *testing.T) {
+	dir := t.TempDir()
+
+	path := filepath.Join(dir, "eve.json")
+
+	if err := os.WriteFile(path, nil, 0600); err != nil {
+		t.Fatalf("failed to create eve.json %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+	out := make(chan NormalizedEvent, 1)
+	done := make(chan error, 1)
+
+	go func() {
+		done <- Watch(ctx, path, out)
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+
+	cancel()
+
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("expected context.Canceled, got %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Watch did not shut down within 2 seconds")
 	}
 }

@@ -15,5 +15,5 @@ LLM_API_KEY = os.getenv("LLM_API_KEY","")
 
 LLM_MODEL =os.getenv(
     "LLM MODEL",
-    "",
+    "gemini-3.5-flash-lite",
 )

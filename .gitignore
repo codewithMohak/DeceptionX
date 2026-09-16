@@ -22,3 +22,9 @@ agent/.env
 # Any other local environment files
 .env
 .env.*
+
+# Go build output and local database
+potctl/bin/
+potctl/potctl.db
+potctl/potctl.db-shm
+potctl/potctl.db-wal

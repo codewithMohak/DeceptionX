@@ -1,6 +1,11 @@
 import logging
 from fastapi import FastAPI
 
+from fastapi import HTTPException
+from agent.models import NormalizedEvent
+from agent.runner import process_event
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s"
@@ -19,6 +24,26 @@ def health() -> dict:
     return{
         "status":"ok",
         "service":"deception-agent",
+    }
+
+@app.post("/process")
+def process(event: NormalizedEvent)-> dict:
+    try:
+        result= process_event(event.model_dump())
+
+    except Exception:
+        logger.exception("Security event processing failed")
+        raise HTTPException(
+            status_code=500,
+            detail="event processing failed",
+        )
+    if result is None:
+        return{
+            "status": "no_change",
+        }
+    return{
+        "status":"success",
+        "potctl": result,
     }
 
 

@@ -1,8 +1,8 @@
 import requests
 
-from config import POTCTL_API_KEY
-from config import POTCTL_TIMEOUT
-from config import POTCTL_URL
+from agent.config import POTCTL_API_KEY
+from agent.config import POTCTL_TIMEOUT
+from agent.config import POTCTL_URL
 
 def toggle(target: str, action: str, reason: str) -> dict:
     """

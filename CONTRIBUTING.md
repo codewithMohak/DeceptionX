@@ -1,335 +1,128 @@
-<div align="center">
+# Contributing to DeceptionX
 
-# ◈ DECEPTIONX
+Thanks for your interest in contributing to **DeceptionX**!
 
-### CONTRIBUTOR CONTROL PLANE
+DeceptionX is an experimental security research and engineering project focused on honeypots, deception technology, intrusion detection, security telemetry, adaptive controls, and automated response.
 
-**Observe → Understand → Build → Validate → Contribute**
-
-<br>
-
-[![Contributing](https://img.shields.io/badge/CONTRIBUTIONS-WELCOME-111827?style=for-the-badge)](https://github.com/codewithMohak/DeceptionX)
-[![Security Research](https://img.shields.io/badge/FOCUS-SECURITY%20RESEARCH-111827?style=for-the-badge)](https://github.com/codewithMohak/DeceptionX)
-[![Open Source](https://img.shields.io/badge/MODE-OPEN%20SOURCE-111827?style=for-the-badge)](https://github.com/codewithMohak/DeceptionX)
-
-</div>
+The project is actively evolving, so some components may be experimental or not production-ready.
 
 ---
 
-> **SIGNAL RECEIVED**
->
-> A new contributor has entered the DeceptionX control plane.
->
-> Your mission is simple:
->
-> **Understand the system. Experiment safely. Improve it. Share what you learn.**
+## Contents
+
+* [Code of Conduct](#code-of-conduct)
+* [Security First](#security-first)
+* [Development Environment](#development-environment)
+* [Repository Structure](#repository-structure)
+* [Getting Started](#getting-started)
+* [Running Tests](#running-tests)
+* [Making Changes](#making-changes)
+* [Commit Messages](#commit-messages)
+* [Pull Requests](#pull-requests)
+* [What You Can Contribute](#what-you-can-contribute)
+* [Good First Contributions](#good-first-contributions)
+* [Issues](#issues)
+* [License](#license)
 
 ---
 
-## `DECEPTIONX // CONTRIBUTOR PROTOCOL`
+## Code of Conduct
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│   DECEPTIONX // CONTRIBUTOR PROTOCOL                       │
-│                                                            │
-│   STATUS   : ACCEPTING CONTRIBUTIONS                       │
-│   MODE     : SECURITY RESEARCH                             │
-│   PRIORITY : SAFE EXPERIMENTATION                          │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-```
+Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
-DeceptionX is an experimental security research and engineering project focused on:
-
-* Honeypots
-* Deception technology
-* Intrusion detection
-* Security telemetry
-* Event perception and normalization
-* Adaptive security controls
-* Automated security response
-
-The project is being developed in the open, and contributions are welcome from developers, cybersecurity students, researchers, and security practitioners.
-
-> **Project status:** DeceptionX is actively evolving. Some components are experimental or under development and should not be treated as production-ready security controls.
+Keep discussions respectful, constructive, and focused on improving the project.
 
 ---
 
-# `01 // ENTER THE SYSTEM`
+## Security First
 
-Before contributing code, understand the basic architecture.
+DeceptionX is a security project. Please keep these rules in mind:
 
-The project is being developed around a pipeline similar to:
+* Use only systems and networks you are authorized to test.
+* Keep the honeynet isolated from production and public networks.
+* Never commit passwords, API keys, tokens, private keys, or other secrets.
+* Do not include real victim data in issues, logs, tests, or pull requests.
+* Be careful when modifying Docker, networking, authentication, filesystem access, or automated response logic.
+* Prefer least-privilege designs.
+* Validate and restrict security-sensitive inputs.
+* Document important security implications of your changes.
 
-```text
-             SECURITY TELEMETRY
-                     │
-                     ▼
-              ┌─────────────┐
-              │  PERCEPTION │
-              └──────┬──────┘
-                     │
-                     ▼
-              ┌─────────────┐
-              │    AGENT    │
-              │  / DECISION │
-              └──────┬──────┘
-                     │
-                     ▼
-              ┌─────────────┐
-              │   POTCTL    │
-              └──────┬──────┘
-                     │
-                     ▼
-              ┌─────────────┐
-              │  HONEYPOT   │
-              │   ACTION    │
-              └─────────────┘
-```
-
-Think of the system as a feedback loop:
-
-```text
-OBSERVE
-   ↓
-NORMALIZE
-   ↓
-DECIDE
-   ↓
-CONTROL
-   ↓
-OBSERVE AGAIN
-```
-
-The architecture is evolving, so always check the current implementation and documentation before assuming a component is complete.
+If you discover a serious security vulnerability, do not publicly disclose sensitive details in an issue.
 
 ---
 
-# `02 // SECURITY GATE`
+## Development Environment
 
-DeceptionX is security-sensitive software.
-
-It interacts with security telemetry, honeypots, Docker containers, network services, and potentially automated control mechanisms.
-
-## ⚠️ Run it safely
-
-Use DeceptionX inside an **isolated security lab**.
-
-Do not expose experimental honeypots or control interfaces directly to the public Internet.
-
-Do not use DeceptionX against systems that you do not own or do not have explicit authorization to test.
-
-### Never commit:
-
-```text
-❌ API keys
-❌ Passwords
-❌ Access tokens
-❌ Private keys
-❌ Credentials
-❌ Sensitive production logs
-❌ Real victim data
-❌ Local databases containing sensitive information
-```
-
-Use sanitized or synthetic data when creating examples or tests.
-
----
-
-## Security principles
-
-When contributing security-sensitive functionality, think about:
-
-```text
-┌───────────────────────┐
-│     LEAST PRIVILEGE   │
-├───────────────────────┤
-│     INPUT VALIDATION  │
-├───────────────────────┤
-│     ALLOW-LISTING     │
-├───────────────────────┤
-│     AUTHENTICATION    │
-├───────────────────────┤
-│     AUDITABILITY      │
-├───────────────────────┤
-│     SAFE FAILURE      │
-└───────────────────────┘
-```
-
-Ask yourself:
-
-> **"What happens if the input is controlled by an attacker?"**
-
-That question matters especially for perception, agent decisions, APIs, Docker operations, and automated response.
-
----
-
-# `03 // YOUR DEVELOPMENT LAB`
-
-Depending on what you are contributing to, you may need:
+Depending on the part of the project you are working on, you may need:
 
 * Git
 * Go
 * Python
 * Docker
 * Linux
-* Basic networking knowledge
-* Basic cybersecurity knowledge
+* Basic networking and cybersecurity knowledge
 
-Some DeceptionX components are designed around an isolated Linux security lab.
-
-### Recommended model
-
-```text
-                 YOUR HOST
-                     │
-              ┌──────┴──────┐
-              │             │
-              ▼             ▼
-          DEV MACHINE    LAB VM
-                            │
-                    ┌───────┴────────┐
-                    │                │
-                    ▼                ▼
-                HONEYPOTS        SURICATA
-                    │                │
-                    └───────┬────────┘
-                            ▼
-                       DECEPTIONX
-```
-
-Keep experimental infrastructure isolated from production networks.
+DeceptionX is designed to be developed and tested in an isolated lab environment.
 
 ---
 
-# `04 // REPOSITORY MAP`
+## Repository Structure
 
-The project is organized around different parts of the DeceptionX architecture.
-
-Conceptually:
+The project is organized roughly as follows:
 
 ```text
 DeceptionX/
-│
-├── agent/          → Decision / agent components
-├── core/           → Core control / enforcement
-├── honeypots/      → Honeypot and deception services
-├── infra/          → Infrastructure and lab configuration
-├── docs/           → Documentation and build notes
-├── frontend/       → Dashboard components
-└── site/            → Public project content
+├── agent/       # Agent and decision logic
+├── core/        # Core enforcement components
+├── honeypots/   # Honeypot and decoy services
+├── infra/       # Infrastructure and lab configuration
+├── docs/        # Documentation and build notes
+├── frontend/    # Dashboard
+└── site/        # Public project website
 ```
 
-The repository is under active development.
-
-Directories and responsibilities may change as the architecture evolves.
-
-Before creating a new directory, check whether an existing component already provides the appropriate location.
+The structure may change as the project develops.
 
 ---
 
-# `05 // GET YOUR COPY`
+## Getting Started
 
-## 1. Fork
+### 1. Fork the repository
 
-Create a fork of the DeceptionX repository.
+Create your own fork of DeceptionX on GitHub.
 
-## 2. Clone
+### 2. Clone your fork
 
 ```bash
 git clone <your-fork-url>
 cd DeceptionX
 ```
 
-## 3. Create a branch
+### 3. Create a branch
 
-For an independent contribution:
+Use a descriptive branch name:
 
 ```bash
 git checkout -b feat/your-change
 ```
 
-Recommended naming:
-
-```text
-feat/<description>
-fix/<description>
-docs/<description>
-test/<description>
-refactor/<description>
-research/<description>
-```
-
 Examples:
 
 ```text
-feat/event-normalization
+feat/perception-improvement
 fix/log-processing
-docs/lab-setup
-test/perception-tailer
-research/mitre-mapping
+docs/contributor-guide
+test/decision-validation
+refactor/docker-control
 ```
 
----
+### 4. Make your changes
 
-# `06 // MAKE YOUR CHANGE`
+Keep changes focused. Avoid mixing unrelated features, refactoring, or documentation changes in the same pull request.
 
-A healthy contribution loop looks like this:
+### 5. Run tests
 
-```text
-        ┌───────────────┐
-        │ UNDERSTAND    │
-        │ THE ISSUE     │
-        └───────┬───────┘
-                ↓
-        ┌───────────────┐
-        │ PLAN THE      │
-        │ CHANGE        │
-        └───────┬───────┘
-                ↓
-        ┌───────────────┐
-        │ IMPLEMENT     │
-        └───────┬───────┘
-                ↓
-        ┌───────────────┐
-        │ TEST          │
-        └───────┬───────┘
-                ↓
-        ┌───────────────┐
-        │ REVIEW DIFF   │
-        └───────┬───────┘
-                ↓
-        ┌───────────────┐
-        │ PULL REQUEST  │
-        └───────────────┘
-```
-
-Keep pull requests focused.
-
-### Good
-
-```text
-fix: prevent duplicate perception events
-```
-
-### Less useful
-
-```text
-update everything
-```
-
-One focused change is easier to review, test, understand, and maintain.
-
----
-
-# `07 // TEST THE SIGNAL`
-
-Testing is part of contributing.
-
-## Go
-
-Run all Go tests:
+For Go:
 
 ```bash
 go test ./...
@@ -341,19 +134,9 @@ For a specific package:
 go test ./internal/perception
 ```
 
-Before submitting a pull request, run the tests relevant to your change.
+Run the appropriate Python tests when working on the agent.
 
-If you introduce a bug fix, consider adding a regression test so the problem does not return later.
-
-## Python
-
-Run the project's configured Python test command for the component you changed.
-
-If a component currently lacks automated tests, adding appropriate coverage is a valuable contribution.
-
----
-
-# `08 // INSPECT BEFORE YOU COMMIT`
+### 6. Review your changes
 
 Before committing:
 
@@ -362,26 +145,46 @@ git status
 git diff
 ```
 
-Look carefully at the changes.
+Make sure you have not included:
 
-Check for accidental inclusion of:
-
-```text
-❌ build binaries
-❌ local databases
-❌ logs
-❌ .env files containing secrets
-❌ temporary files
-❌ credentials
-```
-
-A clean diff is a good diff.
+* secrets
+* `.env` files containing credentials
+* local databases
+* logs
+* binaries
+* temporary files
 
 ---
 
-# `09 // COMMIT SIGNAL`
+## Making Changes
 
-Use short, descriptive commit messages.
+A typical contribution should follow this flow:
+
+```text
+Issue / Idea
+     ↓
+Understand the existing implementation
+     ↓
+Create a focused branch
+     ↓
+Implement the change
+     ↓
+Add or update tests
+     ↓
+Run tests
+     ↓
+Review the diff
+     ↓
+Open a Pull Request
+```
+
+For larger architectural or security-sensitive changes, open an issue or discussion first.
+
+---
+
+## Commit Messages
+
+Use clear, descriptive commit messages.
 
 Recommended prefixes:
 
@@ -392,7 +195,7 @@ docs:      documentation
 test:      tests
 refactor:  code restructuring
 chore:     maintenance
-research:  research/evaluation work
+research:  research or experimentation
 ```
 
 Examples:
@@ -400,243 +203,62 @@ Examples:
 ```text
 feat: add event normalization
 fix: prevent duplicate eve.json processing
-test: add perception tailer coverage
-docs: improve lab setup instructions
-refactor: isolate Docker control logic
-research: document MITRE technique mapping
-```
-
-Describe **what changed**.
-
-Prefer:
-
-```text
-fix: prevent duplicate perception events
-```
-
-over:
-
-```text
-worked on perception
+docs: improve contributor guide
+test: add perception watcher tests
+refactor: simplify docker control
 ```
 
 ---
 
-# `10 // PULL REQUEST HANDSHAKE`
+## Pull Requests
 
-Every pull request should explain four things:
+When opening a pull request, explain:
 
-### What changed?
+1. **What changed**
+2. **Why it was changed**
+3. **How it was tested**
+4. **Any security considerations**
 
-Describe the implementation.
+Before submitting, make sure:
 
-### Why?
-
-Explain the problem or use case.
-
-### How was it tested?
-
-Include the commands or tests you ran.
-
-Example:
-
-```text
-Tests:
-- go test ./internal/perception
-- go test ./...
-```
-
-### Security impact
-
-Mention whether the change affects:
-
-* Network exposure
-* Authentication
-* Authorization
-* Docker privileges
-* Automated actions
-* Logging
-* Data handling
-* Honeypot behavior
-
-If there is no meaningful security impact, say so.
+* [ ] Tests pass
+* [ ] New functionality has appropriate tests
+* [ ] Documentation is updated when necessary
+* [ ] No secrets or sensitive data are included
+* [ ] No unnecessary generated files are included
+* [ ] The change is focused
+* [ ] Security implications have been considered
 
 ---
 
-# `11 // DOCUMENTATION SIGNAL`
+## What You Can Contribute
 
-Not every contribution needs to be code.
+Contributions are welcome in:
 
-Documentation contributions are valuable.
-
-You can improve:
-
-* Setup instructions
-* Architecture documentation
-* Lab configuration
-* Troubleshooting
-* API documentation
-* Security documentation
-* Research notes
-* Examples
-* Diagrams
-* Developer documentation
-
-When documenting the project, distinguish clearly between:
-
-```text
-IMPLEMENTED
-EXPERIMENTAL
-PLANNED
-```
-
-Never describe planned functionality as implemented functionality.
+* 🔐 Security research
+* 💻 Go development
+* 🐍 Python / agent development
+* 🪤 Honeypots and deception
+* 🌐 Networking and IDS
+* 🧪 Testing
+* 📚 Documentation
+* 🎨 Dashboard / frontend
+* 🛠️ Developer experience
 
 ---
 
-# `12 // SECURITY-SENSITIVE CONTRIBUTIONS`
+## Good First Contributions
 
-Extra care is required when changing:
+If you are new to the project, good starting points include:
 
-```text
-Docker control
-Container lifecycle
-Network configuration
-API authentication
-Authorization
-Automated response
-Honeypot exposure
-Agent decisions
-Filesystem access
-Log ingestion
-```
-
-Before opening a pull request, consider:
-
-### Least privilege
-
-Does the component have more permissions than necessary?
-
-### Input validation
-
-Can attacker-controlled data reach this component?
-
-### Allow-listing
-
-Are actions and targets restricted to expected values?
-
-### Authentication
-
-Can an unauthorized user invoke the control?
-
-### Local exposure
-
-Could this change accidentally expose a control interface?
-
-### Auditability
-
-Can important actions be traced later?
-
-### Failure behavior
-
-What happens if:
-
-```text
-input = malformed
-dependency = unavailable
-container = missing
-file = corrupted
-network = unavailable
-agent = unavailable
-```
-
-Security-sensitive pull requests should describe relevant considerations.
-
----
-
-# `13 // WHAT CAN YOU CONTRIBUTE?`
-
-There are several contribution paths.
-
-## `CODE`
-
-```text
-Perception
-Event normalization
-Docker control
-API improvements
-Agent / decision logic
-Storage
-Error handling
-Testing
-Performance
-```
-
-## `SECURITY RESEARCH`
-
-```text
-Threat modeling
-MITRE ATT&CK mapping
-Deception techniques
-Attack-surface analysis
-Detection experiments
-Evaluation methodology
-False-positive analysis
-```
-
-## `DOCUMENTATION`
-
-```text
-Setup guides
-Troubleshooting
-Architecture
-Diagrams
-Examples
-Research notes
-Developer documentation
-```
-
-## `TESTING`
-
-```text
-Unit tests
-Integration tests
-Edge cases
-Malformed-input testing
-Regression tests
-```
-
-## `DEVELOPER EXPERIENCE`
-
-```text
-CI
-Linting
-Development scripts
-Reproducible setup
-Docker improvements
-```
-
----
-
-# `14 // FIRST CONTACT`
-
-New to the project?
-
-Start small.
-
-Good first contributions include:
-
-* Fixing documentation
-* Improving an explanation
-* Adding a missing test
-* Adding an edge-case test
+* Documentation improvements
+* Adding tests
 * Improving error messages
-* Improving troubleshooting
-* Adding an example
-* Improving code comments
-* Documenting existing functionality
+* Fixing small bugs
+* Adding examples
+* Improving troubleshooting documentation
 
-Look for issues marked:
+Useful GitHub labels include:
 
 ```text
 good-first-issue
@@ -645,205 +267,49 @@ documentation
 testing
 ```
 
-If you're planning a substantial implementation, comment on the relevant issue before starting.
-
-This helps prevent duplicated work and gives the project maintainers an opportunity to discuss the approach.
+For larger changes, please discuss the idea before starting implementation.
 
 ---
 
-# `15 // ISSUE PROTOCOL`
+## Issues
 
-Before opening an issue, search existing issues first.
-
-## Bug reports
+### Bug reports
 
 Include:
 
-```text
-What happened?
+* What happened
+* Expected behavior
+* Steps to reproduce
+* Relevant logs or error messages
+* Environment information
 
-What did you expect?
-
-Steps to reproduce:
-
-Environment:
-
-Relevant logs:
-
-Relevant errors:
-
-Version / commit:
-```
-
-Never include secrets or sensitive infrastructure information.
-
----
-
-## Feature requests
+### Feature requests
 
 Explain:
 
-```text
-Problem:
+* The problem
+* The proposed solution
+* Why it would be useful
 
-Who benefits:
+### Research proposals
 
-Proposed behavior:
+Include:
 
-Possible alternatives:
+* Research question
+* Proposed approach
+* Expected security relevance
+* Any assumptions or limitations
 
-Security considerations:
-```
-
----
-
-## Research proposals
-
-For research-oriented contributions, include:
-
-```text
-Research question:
-
-Objective:
-
-Hypothesis:
-
-Experimental setup:
-
-Required telemetry:
-
-Evaluation approach:
-
-Expected limitations:
-```
+**Never include secrets, credentials, private keys, or sensitive victim data in an issue.**
 
 ---
 
-# `16 // PULL REQUEST CHECKLIST`
-
-Before you transmit the signal:
-
-```text
-[ ] Change addresses a specific problem or goal
-[ ] Existing implementation was reviewed
-[ ] Tests were added or updated where appropriate
-[ ] Relevant tests pass
-[ ] git diff was reviewed
-[ ] No secrets were committed
-[ ] No unnecessary build artifacts were committed
-[ ] No sensitive logs were committed
-[ ] Documentation was updated where necessary
-[ ] Security implications were considered
-[ ] PR explains what changed
-[ ] PR explains why it changed
-[ ] PR explains how it was tested
-```
-
----
-
-# `17 // ARCHITECTURE CHANGES`
-
-Large architectural changes should be discussed before implementation.
-
-Examples include:
-
-```text
-Changing the event pipeline
-Changing control-plane behavior
-Introducing a new service
-Changing authentication
-Changing Docker privileges
-Changing network architecture
-Replacing a major dependency
-Changing the agent decision model
-```
-
-For substantial changes, open an issue or discussion describing the proposed design.
-
-This gives contributors and maintainers a chance to evaluate the approach before significant implementation work begins.
-
----
-
-# `18 // CONTRIBUTION COMPLETE`
-
-If your pull request passes review and is merged:
-
-```text
-                    SIGNAL
-                      │
-                      ▼
-                ┌───────────┐
-                │   CODE    │
-                └─────┬─────┘
-                      │
-                      ▼
-                ┌───────────┐
-                │   TEST    │
-                └─────┬─────┘
-                      │
-                      ▼
-                ┌───────────┐
-                │   REVIEW  │
-                └─────┬─────┘
-                      │
-                      ▼
-                ┌───────────┐
-                │   MERGE   │
-                └─────┬─────┘
-                      │
-                      ▼
-                ┌───────────┐
-                │  DECEPTION│
-                │     X     │
-                └───────────┘
-```
-
-Your contribution becomes part of the project's history.
-
----
-
-# `19 // QUESTIONS`
-
-Not sure how something works?
-
-Open a discussion or comment on the relevant issue before beginning a large implementation.
-
-Good questions are welcome.
-
-Security engineering is a process of experimentation, debugging, failure, and learning.
-
-If you found something confusing, documenting it may help the next contributor.
-
----
-
-# `20 // LICENSE`
+## License
 
 By contributing to DeceptionX, you agree that your contributions will be licensed under the project's existing license.
 
-See the repository `LICENSE` file for the applicable terms.
+See [LICENSE](LICENSE) for details.
 
 ---
 
-<div align="center">
-
-## `DECEPTIONX // OPEN BY DESIGN`
-
-### Observe.
-
-### Understand.
-
-### Break safely.
-
-### Build better.
-
-<br>
-
-```text
-──────────────────────────────────────────────
-        SIGNAL CLOSED // CONTRIBUTION LOGGED
-──────────────────────────────────────────────
-```
-
-**Thank you for helping build DeceptionX.**
-
-</div>
+Thank you for helping improve DeceptionX! 🚀

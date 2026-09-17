@@ -1,173 +1,428 @@
 # DeceptionX
 
-**An adaptive, AI-driven honeynet that autonomously reconfigures its exposure based on inferred attacker intent — and automatically generates MITRE ATT&CK-aligned threat intelligence from live sessions.**
+> **An adaptive, AI-driven honeynet designed to dynamically control deception infrastructure based on observed attacker activity.**
 
-> Status: 🚧 MVP in active development. This README reflects the current scoped build — see [Roadmap](#roadmap) for the full vision.
+**Status:** 🚧 MVP in active development
+
+DeceptionX is an open-source security research project exploring how honeypots, IDS telemetry, automated reasoning, and controlled infrastructure can work together to create an adaptive deception environment.
+
+The goal is to move beyond static honeypots toward a system that can **observe → reason → decide → adapt**, while maintaining strong security boundaries and an auditable control layer.
 
 ---
 
-## Why this exists
+## Why DeceptionX?
 
-Traditional honeypots are static: they run fixed emulated services and log whatever hits them. A patient attacker fingerprints them quickly, and the operator gets raw alerts with no structured intelligence.
+Traditional honeypots are largely static. They expose a predefined service, collect activity, and leave the analysis to the operator.
 
-DeceptionX closes that loop. A perception layer reads IDS alerts, an LLM-based reasoning agent infers the attacker's multi-stage progression as an attack graph, and an enforcement layer dynamically exposes or hides honeypot services in real time to keep the attacker engaged — while a mapping layer turns the whole session into structured, MITRE-tagged threat intelligence.
+This creates several limitations:
 
-Full research context, related work, and architectural derivation are in [`docs/architecture.md`](docs/architecture.md).
+* Attackers can fingerprint predictable environments.
+* Raw security alerts require manual interpretation.
+* Honeypot exposure usually does not adapt to attacker behavior.
+* Security decisions may not have a structured audit trail.
+
+DeceptionX explores a closed-loop approach:
+
+```text
+Security Telemetry
+        ↓
+    Perception
+        ↓
+Decision / Agent
+        ↓
+     potctl
+        ↓
+Controlled Honeypot Actions
+        ↓
+New Telemetry
+        ↺
+```
+
+The system is designed so that **reasoning is separated from enforcement**. The agent can propose a decision, while the Go-based control layer is responsible for validating and executing permitted infrastructure actions.
 
 ---
 
 ## Architecture
 
-```
-┌─────────────┐      ┌──────────────┐      ┌───────────────────┐      ┌──────────────┐
-│  Honeypots   │      │  Suricata    │      │   Perception       │      │  Reasoning    │
-│  (Docker)    │─────▶│  (IDS)       │─────▶│   Service (Go)     │─────▶│  Agent        │
-│  SSH / HTTP  │      │  eve.json    │      │  poll + normalize  │      │  (Python/LLM) │
-└─────────────┘      └──────────────┘      └───────────────────┘      └──────┬───────┘
-       ▲                                                                     │
-       │                                                                     ▼
-┌──────┴───────┐      ┌──────────────┐      ┌───────────────────┐    attack graph +
-│  Enforcement  │◀─────│  potctl API  │◀─────│  Episodic Memory   │    exposure decision
-│  (Docker SDK) │      │  (Go, REST)  │      │  (SQLite, append-  │
-└──────────────┘      └──────────────┘      │  only)             │
-                                             └───────────────────┘
-                                                       │
-                                                       ▼
-                                             ┌───────────────────┐
-                                             │  CTI Mapping        │
-                                             │  (MITRE ATT&CK IDs) │
-                                             └───────────────────┘
-                                                       │
-                                                       ▼
-                                             ┌───────────────────┐
-                                             │  Dashboard (React)  │
-                                             │  state / graph / CTI│
-                                             └───────────────────┘
+```text
+                         ┌──────────────────┐
+                         │    Honeypots     │
+                         │   SSH / HTTP     │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │     Suricata     │
+                         │       IDS        │
+                         │    eve.json      │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │    Perception    │
+                         │  Parse /         │
+                         │  Normalize      │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │ Agent / Decision │
+                         │    Reasoning     │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │      potctl      │
+                         │ Go Control Layer │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │ Controlled       │
+                         │ Docker Actions   │
+                         └──────────────────┘
+
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │ SQLite / Audit   │
+                         │     History      │
+                         └──────────────────┘
 ```
 
-**Design principle:** enforcement (Go) is fully decoupled from reasoning (Python/LLM) over a REST/gRPC boundary. Fast, deterministic infrastructure actions never block on slow, probabilistic LLM calls — and either side can be modified or replaced independently.
+### Core design principle
+
+DeceptionX separates **decision-making** from **infrastructure enforcement**.
+
+The reasoning layer should not directly control Docker or the honeynet. Instead:
+
+```text
+Agent
+  ↓
+Decision
+  ↓
+Validation
+  ↓
+potctl
+  ↓
+Allowed Action
+```
+
+This provides a clear security boundary between probabilistic reasoning and deterministic infrastructure control.
 
 ---
 
-## Tech stack
+## Current Implementation
 
-| Layer | Technology |
-|---|---|
-| Enforcement / perception | Go, Docker SDK, zerolog |
-| Reasoning agent | Python, FastAPI, LLM API |
-| IDS | Suricata |
-| Honeypots | Cowrie (SSH), custom HTTP decoy |
-| Memory / audit log | SQLite (append-only via triggers) |
-| CTI mapping | Rule-based Suricata → MITRE ATT&CK lookup |
-| Dashboard | React, TanStack Query, react-flow, Tailwind |
-| Inter-service auth | Short-lived tokens (no standing credentials) |
+The project is being developed incrementally.
+
+### Honeynet
+
+* [x] Isolated Linux honeynet environment
+* [x] Cowrie SSH honeypot
+* [x] HTTP decoy service
+* [x] Docker-based service deployment
+* [x] Suricata IDS
+* [x] JSON-based security telemetry
+
+### Perception
+
+* [x] Suricata `eve.json` monitoring
+* [x] Event parsing
+* [x] Event normalization
+* [x] File offset tracking
+* [x] Protection against duplicate processing
+* [x] Partial-line handling
+* [x] Automated tests
+
+### `potctl` Control Layer
+
+* [x] Go-based control plane
+* [x] Docker integration
+* [x] Structured logging with zerolog
+* [x] SQLite state and audit storage
+* [x] REST API
+* [x] `/state` endpoint
+* [x] `/toggle` endpoint
+* [x] API key authentication
+* [x] Target allow-list validation
+* [x] Local-only API exposure
+
+### Agent
+
+* [x] Structured decision model
+* [x] Decision validation
+* [x] Supported actions such as `expose`, `hide`, and `no_change`
+
+The broader agent reasoning and adaptive decision loop is still under active development.
 
 ---
 
-## Repository structure
+## Security Design
 
-```
-deceptionx/
-├── core/           # Go: enforcement + perception (potctl)
-├── agent/          # Python: LLM reasoning, CTI mapping
-├── honeypots/       # Container definitions (Cowrie, HTTP decoy)
-├── infra/           # docker-compose, Suricata config
-├── frontend/        # React dashboard
-├── scripts/          # Attack simulation scenarios
-├── docs/             # Architecture, evaluation, weekly build log
-└── tests/
-```
+Security is a core part of DeceptionX rather than an additional feature.
+
+The project follows several principles:
+
+### Least privilege
+
+Components should receive only the permissions required for their function.
+
+### Controlled actions
+
+The enforcement layer validates decisions before performing infrastructure changes.
+
+### Allow-listing
+
+Security-sensitive targets and actions are explicitly restricted rather than accepting arbitrary input.
+
+### Local-only control
+
+The `potctl` API is designed for local communication and should not be exposed directly to an untrusted network.
+
+### Authentication
+
+API access requires authentication rather than relying only on network location.
+
+### Auditability
+
+Important state changes and decisions are stored so that system behavior can be reviewed later.
+
+### Isolation
+
+The honeynet should run inside an isolated lab environment and must not be used against systems or networks without authorization.
 
 ---
 
-## Getting started
+## Technology Stack
+
+| Component           | Technology                       |
+| ------------------- | -------------------------------- |
+| Control layer       | Go                               |
+| Perception          | Go, fsnotify                     |
+| Docker control      | Moby/Docker API                  |
+| Logging             | zerolog                          |
+| Storage             | SQLite                           |
+| IDS                 | Suricata                         |
+| SSH honeypot        | Cowrie                           |
+| HTTP decoy          | Custom HTTP service              |
+| Agent               | Python                           |
+| Decision validation | Pydantic                         |
+| Dashboard           | React *(planned/in development)* |
+
+The technology stack may evolve as the project develops.
+
+---
+
+## Repository Structure
+
+```text
+DeceptionX/
+│
+├── agent/          # Python agent and decision logic
+├── core/           # Core security/control components
+├── honeypots/      # Honeypot and decoy services
+├── infra/          # Lab and infrastructure configuration
+├── frontend/       # Dashboard
+├── docs/           # Architecture and build documentation
+├── scripts/        # Testing and attack simulations
+│
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+├── LICENSE
+└── README.md
+```
+
+The structure is evolving alongside the project.
+
+---
+
+## Getting Started
+
+DeceptionX is currently designed primarily for an **isolated Linux security lab**.
 
 ### Prerequisites
-- Docker + Docker Compose
-- Go 1.22+
-- Python 3.11+
-- Node.js 20+
-- An LLM API key (set as `LLM_API_KEY` in `.env`)
 
-### Local setup
+Depending on the component being developed:
 
-```bash
-git clone https://github.com/<your-username>/deceptionx.git
-cd deceptionx
+* Git
+* Linux
+* Docker
+* Docker Compose
+* Go
+* Python
+* Basic networking knowledge
 
-# bring up honeypots + Suricata
-cd infra && docker compose up -d
-
-# run the Go enforcement/perception core
-cd ../core && go run cmd/potctl/main.go
-
-# run the Python reasoning agent
-cd ../agent && pip install -r requirements.txt && uvicorn main:app --reload
-
-# run the dashboard
-cd ../frontend && npm install && npm run dev
-```
-
-Dashboard available at `http://localhost:5173`.
-
-### Running an attack scenario
+### Clone the repository
 
 ```bash
-cd scripts/scenarios
-./deterministic.sh   # scripted recon → exploit sequence against the lab honeynet
+git clone https://github.com/codewithMohak/DeceptionX.git
+cd DeceptionX
 ```
 
-Watch the dashboard update live as alerts are inferred into an attack graph and exposure decisions are enforced.
+### Run Go tests
 
-> ⚠️ Run only against the isolated lab network defined in `infra/docker-compose.yml`. Never point this at a network you don't own.
+From the appropriate Go module:
+
+```bash
+go test ./...
+```
+
+For the perception package:
+
+```bash
+go test ./internal/perception
+```
+
+Additional setup instructions are being documented as the project develops.
+
+> ⚠️ **Important:** DeceptionX is a security research project. Run the honeynet only inside an isolated environment and only against systems you are authorized to test.
 
 ---
 
-## What it does today (MVP scope)
+## Development
 
-- [x] Containerized honeynet (SSH + HTTP decoy) with Suricata IDS
-- [x] Go enforcement core with structured, append-only audit logging
-- [x] LLM-based attack-graph inference + exposure decision (single combined prompt)
-- [x] Closed loop: perception → inference → enforcement, fully automated at runtime
-- [x] Rule-based MITRE ATT&CK mapping from IDS signatures
-- [x] Live dashboard: honeypot state, attack graph, CTI feed
-- [ ] Persona-driven decoy content (SANDMAN-inspired)
-- [ ] Anti-fingerprinting hardening
-- [ ] Multi-agent / Kubernetes scaling
-- [ ] Full STIX/TAXII-compliant CTI output
+DeceptionX is being developed incrementally through focused milestones.
 
-Infrastructure (containers, Suricata) is provisioned manually via `docker compose`; only the runtime exposure behavior is autonomously managed by the agent loop.
+The development process emphasizes:
+
+```text
+Research
+   ↓
+Design
+   ↓
+Implementation
+   ↓
+Testing
+   ↓
+Security Review
+   ↓
+Documentation
+```
+
+Contributions are welcome in areas such as:
+
+* Security research
+* Honeypot development
+* Detection engineering
+* Go development
+* Python development
+* Agent systems
+* Testing
+* Documentation
+* Frontend/dashboard development
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 
-## Evaluation
+## Project Status
 
-Metrics from scripted attack scenarios (deterministic, stealthy) are tracked in [`docs/evaluation.md`](docs/evaluation.md), including attack-graph inference accuracy, exposure efficiency, and per-cycle latency.
+DeceptionX is currently an **MVP / active research build**.
+
+The current implementation focuses on establishing the core pipeline:
+
+```text
+Telemetry
+    ↓
+Perception
+    ↓
+Decision
+    ↓
+Control
+    ↓
+Audit
+```
+
+More advanced capabilities will be added incrementally and documented as they become implemented and tested.
 
 ---
 
 ## Roadmap
 
-Full 16-week research roadmap (persona engine, anti-fingerprinting, Kubernetes scaling, STIX output) is outlined in [`docs/architecture.md`](docs/architecture.md).
+Planned areas of development include:
+
+* Adaptive exposure policies
+* Expanded attacker behavior modeling
+* MITRE ATT&CK mapping
+* Attack graph construction
+* Improved deception personas
+* Anti-fingerprinting techniques
+* Rich security telemetry
+* Dashboard visualization
+* Expanded evaluation and benchmarking
+* Multi-agent experimentation
+* Kubernetes-based scaling
+* Structured CTI output such as STIX/TAXII
+
+The roadmap will evolve as research and implementation progress.
 
 ---
 
-## Related work
+## Research & Related Work
 
-This project synthesizes ideas from:
-- Mirra (2025) — *Towards Autonomous Cyber Deception: An AI Agent for Dynamic Honeynet Management*
-- De Gaspari et al. (2019) — *Towards Intelligent Cyber Deception Systems* (ADARCH/AHEAD)
-- Newsham et al. (2025) — *Inducing Personality in LLM-Based Honeypot Agents* (SANDMAN)
-- Mirra et al. (2026) — *Towards Agentic Honeynet Configuration*
+DeceptionX builds upon ideas from research in cyber deception, autonomous honeynets, and intelligent security systems.
 
-Full breakdown and how each maps to this system's design in [`docs/architecture.md`](docs/architecture.md).
+Relevant work includes:
+
+* **Mirra (2025)** — *Towards Autonomous Cyber Deception: An AI Agent for Dynamic Honeynet Management*
+* **De Gaspari et al. (2019)** — *Towards Intelligent Cyber Deception Systems*
+* **Newsham et al. (2025)** — *Inducing Personality in LLM-Based Honeypot Agents*
+* **Mirra et al. (2026)** — *Towards Agentic Honeynet Configuration*
+
+The project's architecture and research direction are documented further in:
+
+[`docs/architecture.md`](docs/architecture.md)
+
+---
+
+## Documentation
+
+Additional project documentation is available under [`docs/`](docs/).
+
+This includes:
+
+* Architecture
+* Lab setup
+* Development notes
+* Evaluation
+* Build logs
+* Research notes
+
+As the project grows, documentation will be expanded alongside implementation.
+
+---
+
+## Contributing
+
+Contributions, security research, testing, documentation improvements, and ideas are welcome.
+
+Before contributing, please read:
+
+* [`CONTRIBUTING.md`](CONTRIBUTING.md)
+* [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+
+For security-sensitive issues, please follow the project's security reporting process.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+DeceptionX is released under the [MIT License](LICENSE).
+
+---
 
 ## Author
 
-Built by Mohak Agarwal — security researcher and engineer. [LinkedIn](https://www.linkedin.com/in/mohak-agarwal/) · [Medium](https://medium.com/@mohakagarwal.sec)
+**Mohak Agarwal**
+
+Security researcher and engineer building DeceptionX as an open-source security research project.
+
+* [LinkedIn](https://www.linkedin.com/in/mohak-agarwal/)
+* [Medium](https://medium.com/@mohakagarwal.sec)
+
+---
+
+> **DeceptionX is an evolving research project.**
+>
+> Build it. Break it. Observe it. Improve it.

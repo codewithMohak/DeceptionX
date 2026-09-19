@@ -28,3 +28,8 @@ potctl/bin/
 potctl/potctl.db
 potctl/potctl.db-shm
 potctl/potctl.db-wal
+
+
+cti.db
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,8 @@
+# Suricata Signature ID -> MITRE ATTACK technique
+#
+# Only signatures observed in the DeceptionX lab should be added here.
+# Signature  without a defensible  ATT&CK mapping  should remain unmapped.
+
+2022973: null
+2228000: null
+2260002: null

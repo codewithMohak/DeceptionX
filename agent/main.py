@@ -5,6 +5,9 @@ from fastapi import HTTPException
 from agent.models import NormalizedEvent
 from agent.runner import process_event
 
+from agent.cti.models import CTIEvent
+from agent.cti.service import enrich_event,store
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +47,24 @@ def process(event: NormalizedEvent)-> dict:
     return{
         "status":"success",
         "potctl": result,
+    }
+
+@app.get("/cti/{session_id}")
+def get_cti(session_id: str) -> dict:
+    events = store.get_by_session(session_id)
+
+    return {
+        "session_id": session_id,
+        "events": events,
+    }
+
+@app.post("/cti/test")
+def add_test_cti_event(event: CTIEvent) -> dict:
+    result = enrich_event(event)
+
+    return {
+        "status": "stored",
+        "event": result,
     }
 
 

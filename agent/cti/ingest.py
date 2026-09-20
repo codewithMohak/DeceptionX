@@ -3,10 +3,9 @@ from pathlib import Path
 
 from agent.cti.models import CTIEvent
 from agent.cti.service import enrich_event
-
 from agent.cti.session import SessionManager
-
 from agent.cti.dedup import event_fingerprint
+
 
 session_manager = SessionManager()
 
@@ -26,6 +25,11 @@ def ingest_alert_line(line: str) -> dict | None:
     if data.get("event_type") != "alert":
         return None
 
+    flow_id = data.get("flow_id")
+    if flow_id is None:
+        return None
+
+    # Extract the alert object before using it.
     alert = data.get("alert")
 
     if not isinstance(alert, dict):
@@ -45,15 +49,14 @@ def ingest_alert_line(line: str) -> dict | None:
     timestamp = data.get("timestamp", "")
 
     session_id = session_manager.get_session_id(
-    src_ip,
-    timestamp,
-)
+        src_ip,
+        timestamp,
+    )
 
     fingerprint = event_fingerprint(
         session_id,
+        flow_id,
         signature_id,
-        timestamp,
-        src_ip,
     )
 
     if fingerprint in seen_events:
@@ -62,13 +65,15 @@ def ingest_alert_line(line: str) -> dict | None:
     seen_events.add(fingerprint)
 
     event = CTIEvent(
-    session_id=session_id,
-    timestamp=timestamp,
-    src_ip=src_ip,
-    signature_id=signature_id,
-    signature=signature,
-    evidence=f"{signature} detected from {src_ip}",
-)
+        session_id=session_id,
+        timestamp=timestamp,
+        src_ip=src_ip,
+        flow_id=flow_id,
+        signature_id=signature_id,
+        signature=signature,
+        evidence=f"{signature} detected from {src_ip}",
+    )
+
     return enrich_event(event)
 
 

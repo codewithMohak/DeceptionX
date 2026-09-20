@@ -1,3 +1,24 @@
-run_id,scenario,total_stages,correctly_inferred_stages,accuracy
-1,deterministic,4,1,0.25
-2,deterministic,4,1,0.25
+# DeceptionX Evaluation
+
+## Deterministic Scenario
+
+Three independent runs were performed using the same deterministic attack scenario.
+
+| Run | Stage Accuracy | Exposure Efficiency |
+|---|---:|---:|
+| 1 | 25% | 100% |
+| 2 | 25% | 100% |
+| 3 | 25% | 100% |
+| Average | 25% | 100% |
+
+### Interpretation
+
+The CTI pipeline consistently observed the network discovery stage through
+Suricata alerts, while the other three ground-truth stages were not represented
+in the current Suricata-only CTI ingestion pipeline.
+
+Both exposed honeypot services (SSH/Cowrie and HTTP decoy) were exercised by
+the deterministic scenario.
+
+These results represent the baseline before further CTI or attack-graph
+changes.

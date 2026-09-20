@@ -9,6 +9,9 @@ class SessionManager:
     def get_session_id(self, src_ip: str, timestamp: str) -> str:
         current_time = datetime.fromisoformat(timestamp)
 
+        if current_time.tzinfo is None:
+            current_time = current_time.replace(tzinfo=timezone.utc)
+            
         session = self.sessions.get(src_ip)
 
         if session is None:

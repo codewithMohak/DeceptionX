@@ -19,3 +19,7 @@ def watch_file(path: str, poll_interval: float=1.0) -> None:
 
             if result is not None:
                 print("CTI event ingested: result")
+
+
+if __name__ == "__main__":
+    watch_file("/var/log/suricata/eve.json")

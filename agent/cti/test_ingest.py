@@ -1,5 +1,12 @@
+import pytest
+import agent.cti.ingest as ingest
 from agent.cti.ingest import ingest_alert_line
 
+
+@pytest.fixture(autouse=True)
+def reset_ingest_state():
+    ingest.seen_events.clear()
+    ingest.session_manager = ingest.SessionManager()
 
 def test_ingest_alert_line(monkeypatch):
     captured = {}
@@ -17,14 +24,15 @@ def test_ingest_alert_line(monkeypatch):
     )
 
     line = (
-        '{"event_type":"alert",'
-        '"timestamp":"2026-09-19T07:43:46",'
-        '"src_ip":"192.168.242.1",'
-        '"alert":{'
-        '"signature_id":2228000,'
-        '"signature":"SURICATA SSH invalid banner"'
-        '}}'
-    )
+    '{"event_type":"alert",'
+    '"timestamp":"2026-09-19T07:43:46",'
+    '"src_ip":"192.168.242.1",'
+    '"flow_id":1747442319655752,'
+    '"alert":{'
+    '"signature_id":2228000,'
+    '"signature":"SURICATA SSH invalid banner"'
+    '}}'
+)
 
     result = ingest_alert_line(line)
 
@@ -49,12 +57,13 @@ def test_duplicate_alert_is_ignored(monkeypatch):
     )
 
     line = (
-        '{"event_type":"alert",'
-        '"timestamp":"2026-09-20T06:30:00+00:00",'
-        '"src_ip":"192.168.242.1",'
-        '"alert":{"signature_id":2024364,'
-        '"signature":"ET SCAN Possible Nmap User-Agent Observed"}}'
-    )
+    '{"event_type":"alert",'
+    '"timestamp":"2026-09-20T06:30:00+00:00",'
+    '"src_ip":"192.168.242.1",'
+    '"flow_id":1747442319655752,'
+    '"alert":{"signature_id":2024364,'
+    '"signature":"ET SCAN Possible Nmap User-Agent Observed"}}'
+)
 
     first = ingest_alert_line(line)
     second = ingest_alert_line(line)

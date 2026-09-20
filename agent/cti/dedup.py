@@ -2,11 +2,10 @@ import hashlib
 
 def event_fingerprint(
         session_id: str,
+        flow_id: str,
         signature_id: int,
-        timestamp:str,
-        src_ip:str,
 ) -> str:
-    value =f"{session_id} | {signature_id} | {timestamp} |{src_ip}"
+    value =f"{session_id} | {flow_id} |{signature_id}"
 
     return hashlib.sha256(
         value.encode("utf-8")

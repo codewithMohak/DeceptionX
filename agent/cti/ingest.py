@@ -40,20 +40,19 @@ def ingest_alert_line(line: str) -> dict | None:
 
     timestamp = data.get("timestamp", "")
 
-    session_id=session_manager.get_session_id(
+    session_id = session_manager.get_session_id(
     src_ip,
-    data.get("timestamp", ""),
-),
+    timestamp,
+)
 
     event = CTIEvent(
-        session_id=src_ip,
-        timestamp=data.get("timestamp", ""),
-        src_ip=src_ip,
-        signature_id=signature_id,
-        signature=signature,
-        evidence=f"{signature} detected from {src_ip}",
-    )
-
+    session_id=session_id,
+    timestamp=timestamp,
+    src_ip=src_ip,
+    signature_id=signature_id,
+    signature=signature,
+    evidence=f"{signature} detected from {src_ip}",
+)
     return enrich_event(event)
 
 

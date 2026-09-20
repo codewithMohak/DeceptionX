@@ -3,19 +3,20 @@ from typing import Any
 
 
 class CTIStore:
-    def __init__(self, db_path:str = "cti.db"):
-        self.db_path =db_path
+    def __init__(self, db_path: str = "cti.db"):
+        self.db_path = db_path
         self._create_table()
 
     def _create_table(self) -> None:
         with sqlite3.connect(self.db_path) as connection:
             connection.execute(
-                    """
+                """
                 CREATE TABLE IF NOT EXISTS cti_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     session_id TEXT NOT NULL,
                     timestamp TEXT NOT NULL,
                     src_ip TEXT NOT NULL,
+                    flow_id INTEGER NOT NULL,
                     signature_id INTEGER NOT NULL,
                     signature TEXT NOT NULL,
                     evidence TEXT NOT NULL,
@@ -36,6 +37,7 @@ class CTIStore:
                     session_id,
                     timestamp,
                     src_ip,
+                    flow_id,
                     signature_id,
                     signature,
                     evidence,
@@ -43,12 +45,13 @@ class CTIStore:
                     technique_name,
                     tactic
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event["session_id"],
                     event["timestamp"],
                     event["src_ip"],
+                    event["flow_id"],
                     event["signature_id"],
                     event["signature"],
                     event["evidence"],
@@ -68,6 +71,7 @@ class CTIStore:
                     session_id,
                     timestamp,
                     src_ip,
+                    flow_id,
                     signature_id,
                     signature,
                     evidence,
@@ -98,6 +102,7 @@ class CTIStore:
                     "session_id": row["session_id"],
                     "timestamp": row["timestamp"],
                     "src_ip": row["src_ip"],
+                    "flow_id": row["flow_id"],
                     "signature_id": row["signature_id"],
                     "signature": row["signature"],
                     "evidence": row["evidence"],

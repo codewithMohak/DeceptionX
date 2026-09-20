@@ -17,7 +17,11 @@ hydra -l root -P "$HOME/deceptionx-wordlists/ssh-passwords.txt" \
     -s 2222 ssh://"$TARGET" -t 4 -f
 
 echo "[3/4] SSH honeypot interaction"
-ssh -p 2222 root@"$TARGET"
+ssh -p 2222 \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    root@"$TARGET" \
+    "whoami; pwd; ls; uname -a; exit"
 
 echo "[4/4] HTTP path scanning"
 for path in admin login robots.txt server-status backup test; do

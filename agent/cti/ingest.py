@@ -6,7 +6,11 @@ from agent.cti.service import enrich_event
 
 from agent.cti.session import SessionManager
 
+from agent.cti.dedup import event_fingerprint
+
 session_manager = SessionManager()
+
+seen_events: set[str] = set()
 
 
 def ingest_alert_line(line: str) -> dict | None:
@@ -44,6 +48,18 @@ def ingest_alert_line(line: str) -> dict | None:
     src_ip,
     timestamp,
 )
+
+    fingerprint = event_fingerprint(
+        session_id,
+        signature_id,
+        timestamp,
+        src_ip,
+    )
+
+    if fingerprint in seen_events:
+        return None
+
+    seen_events.add(fingerprint)
 
     event = CTIEvent(
     session_id=session_id,

@@ -11,6 +11,7 @@ def watch_file(path: str, poll_interval: float=1.0) -> None:
             line= file.readline()
 
             if not line:
+                print("Watching Suricata eve.json...")
                 time.sleep(poll_interval)
                 continue
 

@@ -17,7 +17,7 @@ def map_alert_to_technique(signature_id: int) -> TechniqueMatch | None:
     mapping = mappings.get(signature_id)
 
     if mapping is None:
-        print("unmapped signature: {signature_id}")
+        print(f"unmapped signature: {signature_id}")
         return None
 
     return TechniqueMatch(

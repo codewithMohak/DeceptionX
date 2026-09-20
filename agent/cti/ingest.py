@@ -4,6 +4,10 @@ from pathlib import Path
 from agent.cti.models import CTIEvent
 from agent.cti.service import enrich_event
 
+from agent.cti.session import SessionManager
+
+session_manager = SessionManager()
+
 
 def ingest_alert_line(line: str) -> dict | None:
     """
@@ -33,6 +37,13 @@ def ingest_alert_line(line: str) -> dict | None:
 
     if not src_ip:
         return None
+
+    timestamp = data.get("timestamp", "")
+
+    session_id=session_manager.get_session_id(
+    src_ip,
+    data.get("timestamp", ""),
+),
 
     event = CTIEvent(
         session_id=src_ip,

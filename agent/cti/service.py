@@ -12,6 +12,7 @@ def  enrich_event(event: CTIEvent)-> dict:
         "session_id": event.session_id,
         "timestamp": event.timestamp,
         "src_ip": event.src_ip,
+        "flow_id": event.flow_id,
         "signature_id": event.signature_id,
         "signature": event.signature,
         "evidence": event.evidence,

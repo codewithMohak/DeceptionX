@@ -2,3 +2,5 @@ requests
 fastapi
 uvicorn
 PyYAML
+google-genai
+pydantic

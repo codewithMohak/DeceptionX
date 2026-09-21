@@ -1,30 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
-import { CTI_API_URL, SOURCE_IP } from "../config"
-
-async function fetchCTIEvents() {
-  const sessionId = import.meta.env.VITE_CTI_SESSION_ID
-
-  if (!sessionId) {
-    throw new Error("VITE_CTI_SESSION_ID is not configured")
-  }
-
-  const response = await fetch(
-    `${CTI_API_URL}/sessions/latest/${encodeURIComponent(SOURCE_IP)}`
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch CTI events")
-  }
-
-  return response.json()
-}
+import { useLatestSession, useCTIEvents } from "../api"
 
 function MITRETechniques() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["cti-events"],
-    queryFn: fetchCTIEvents,
-    refetchInterval: 3000,
-  })
+  const { data: sessionData, isLoading: sessionLoading, isError: sessionError } = useLatestSession()
+  const sessionId = sessionData?.session_id
+
+  const { data, isLoading: eventsLoading, isError: eventsError } = useCTIEvents(sessionId)
+  
+  const isLoading = sessionLoading || eventsLoading
+  const isError = sessionError || eventsError
 
   if (isLoading) {
     return (

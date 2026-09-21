@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
+import { POTCTL_API_URL } from "../config"
 
 async function fetchHoneypots() {
-  const response = await fetch("http://127.0.0.1:8081/state", {
+  const response = await fetch(`${POTCTL_API_URL}/state`,{
     headers: {
       "X-API-Key": import.meta.env.VITE_POTCTL_API_KEY,
     },

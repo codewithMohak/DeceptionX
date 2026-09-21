@@ -1,29 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
-
-async function fetchCTIEvents() {
-  const sessionId = import.meta.env.VITE_CTI_SESSION_ID
-
-  if (!sessionId) {
-    throw new Error("VITE_CTI_SESSION_ID is not configured")
-  }
-
-  const response = await fetch(
-    `http://127.0.0.1:8090/cti/${encodeURIComponent(sessionId)}`
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch CTI events")
-  }
-
-  return response.json()
-}
+import { useLatestSession, useCTIEvents } from "../api"
 
 function RecentActivity() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["cti-events"],
-    queryFn: fetchCTIEvents,
-    refetchInterval: 3000,
-  })
+  const { data: sessionData, isLoading: sessionLoading, isError: sessionError } = useLatestSession()
+  const sessionId = sessionData?.session_id
+  
+  const { data, isLoading: eventsLoading, isError: eventsError } = useCTIEvents(sessionId)
+  
+  const isLoading = sessionLoading || eventsLoading
+  const isError = sessionError || eventsError
 
   if (isLoading) {
     return (

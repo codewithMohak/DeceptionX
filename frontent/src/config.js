@@ -1,4 +1,4 @@
-export const POTCTL_API_URL = "http://192.168.242.142:8081"
-export const CTI_API_URL = "http://192.168.242.142:8090"
-
-export const SOURCE_IP = "192.168.242.1"
+export const POTCTL_API_URL = import.meta.env.VITE_POTCTL_API_URL
+export const CTI_API_URL = import.meta.env.VITE_CTI_API_URL
+export const SOURCE_IP = import.meta.env.VITE_CTI_SOURCE_IP
+export const POTCTL_API_KEY = import.meta.env.VITE_POTCTL_API_KEY

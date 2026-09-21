@@ -58,3 +58,17 @@ def test_process_rejects_invalid_event():
 
     assert response.status_code == 422
 
+
+def test_watcher_starts_on_startup():
+    from unittest.mock import patch
+    
+    with patch("agent.main.threading.Thread") as mock_thread:
+        # Trigger the lifespan context manager
+        with TestClient(app):
+            pass
+            
+        mock_thread.assert_called_once()
+        args, kwargs = mock_thread.call_args
+        assert kwargs["target"].__name__ == "watch_file"
+        assert kwargs["daemon"] is True
+        mock_thread.return_value.start.assert_called_once()

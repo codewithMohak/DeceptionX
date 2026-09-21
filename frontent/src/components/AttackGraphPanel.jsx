@@ -11,15 +11,24 @@ import "@xyflow/react/dist/style.css"
 
 import { useQuery } from "@tanstack/react-query"
 
-async function fetchAttackGraph() {
-  const sessionId = import.meta.env.VITE_CTI_SESSION_ID
+const CTI_API_URL = "http://192.168.242.142:8090"
+const SOURCE_IP = "192.168.242.1"
 
-  if (!sessionId) {
-    throw new Error("VITE_CTI_SESSION_ID is not configured")
+async function fetchLatestSession() {
+  const response = await fetch(
+    `${CTI_API_URL}/sessions/latest/${encodeURIComponent(SOURCE_IP)}`
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch latest CTI session")
   }
 
+  return response.json()
+}
+
+async function fetchAttackGraph(sessionId) {
   const response = await fetch(
-    `http://127.0.0.1:8090/graph/${encodeURIComponent(sessionId)}`
+    `${CTI_API_URL}/graph/${encodeURIComponent(sessionId)}`
   )
 
   if (!response.ok) {
@@ -64,11 +73,35 @@ function formatStage(type) {
 function AttackGraphPanel() {
   const [selectedNode, setSelectedNode] = useState(null)
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["attack-graph"],
-    queryFn: fetchAttackGraph,
+  // Query 1:
+  // Discover the latest session for the attacker.
+  const {
+    data: sessionData,
+    isLoading: isSessionLoading,
+    isError: isSessionError,
+  } = useQuery({
+    queryKey: ["latest-session", SOURCE_IP],
+    queryFn: fetchLatestSession,
     refetchInterval: 3000,
   })
+
+  const sessionId = sessionData?.session_id
+
+  // Query 2:
+  // Fetch the graph for the discovered session.
+  const {
+    data,
+    isLoading: isGraphLoading,
+    isError: isGraphError,
+  } = useQuery({
+    queryKey: ["attack-graph", sessionId],
+    queryFn: () => fetchAttackGraph(sessionId),
+    enabled: Boolean(sessionId),
+    refetchInterval: 3000,
+  })
+
+  const isLoading = isSessionLoading || isGraphLoading
+  const isError = isSessionError || isGraphError
 
   if (isLoading) {
     return (
@@ -93,6 +126,20 @@ function AttackGraphPanel() {
 
         <p className="mt-4 text-sm text-red-400">
           Unable to load attack graph.
+        </p>
+      </section>
+    )
+  }
+
+  if (!sessionId) {
+    return (
+      <section className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <h2 className="text-lg font-semibold text-white">
+          Attack Graph
+        </h2>
+
+        <p className="mt-4 text-sm text-gray-500">
+          No active CTI session found.
         </p>
       </section>
     )
@@ -134,6 +181,10 @@ function AttackGraphPanel() {
     setSelectedNode(node)
   }
 
+  const selectedEvent = data?.nodes?.find(
+    (node) => node.id === selectedNode?.id
+  )
+
   return (
     <section className="rounded-xl border border-white/10 bg-white/5 p-5">
       {/* Header */}
@@ -145,6 +196,18 @@ function AttackGraphPanel() {
 
         <p className="mt-1 text-sm text-gray-500">
           Visualize the sequence of observed security events.
+        </p>
+      </div>
+
+      {/* Current session */}
+
+      <div className="mt-3">
+        <p className="text-xs text-gray-500">
+          Session
+        </p>
+
+        <p className="mt-1 break-all text-xs text-gray-400">
+          {sessionId}
         </p>
       </div>
 
@@ -195,12 +258,8 @@ function AttackGraphPanel() {
                 Stage
               </p>
 
-              <p className="mt-1 text-sm text-white capitalize">
-                {formatStage(
-                  data.nodes.find(
-                    (node) => node.id === selectedNode.id
-                  )?.type ?? "unknown"
-                )}
+              <p className="mt-1 text-sm capitalize text-white">
+                {formatStage(selectedEvent?.type ?? "unknown")}
               </p>
             </div>
 
@@ -210,11 +269,7 @@ function AttackGraphPanel() {
               </p>
 
               <p className="mt-1 text-sm text-white">
-                {
-                  data.nodes.find(
-                    (node) => node.id === selectedNode.id
-                  )?.label
-                }
+                {selectedEvent?.label ?? "Unknown event"}
               </p>
             </div>
           </div>

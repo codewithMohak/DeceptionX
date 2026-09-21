@@ -50,9 +50,9 @@ func main() {
 		apiKey,
 	)
 	banner.Success("API server initialized")
-	
+
 	server := &http.Server{
-		Addr:              "127.0.0.1:8081",
+		Addr:              "0.0.0.0:8081",
 		Handler:           srv.Router(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,

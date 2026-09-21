@@ -1,5 +1,6 @@
 import logging
 import threading
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -17,9 +18,10 @@ from agent.cti.graph_service import build_attack_graph
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    log_path = os.getenv("SURICATA_LOG_PATH", "/var/log/suricata/eve.json")
     watcher_thread = threading.Thread(
         target=watch_file,
-        args=("/var/log/suricata/eve.json",),
+        args=(log_path,),
         daemon=True,
     )
     watcher_thread.start()

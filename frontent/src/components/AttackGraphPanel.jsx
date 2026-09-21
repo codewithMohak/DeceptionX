@@ -9,34 +9,7 @@ import {
 
 import "@xyflow/react/dist/style.css"
 
-import { useQuery } from "@tanstack/react-query"
-
-const CTI_API_URL = "http://192.168.242.142:8090"
-const SOURCE_IP = "192.168.242.1"
-
-async function fetchLatestSession() {
-  const response = await fetch(
-    `${CTI_API_URL}/sessions/latest/${encodeURIComponent(SOURCE_IP)}`
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch latest CTI session")
-  }
-
-  return response.json()
-}
-
-async function fetchAttackGraph(sessionId) {
-  const response = await fetch(
-    `${CTI_API_URL}/graph/${encodeURIComponent(sessionId)}`
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch attack graph")
-  }
-
-  return response.json()
-}
+import { useLatestSession, useAttackGraph } from "../api"
 
 function getNodeStyle(type) {
   switch (type) {
@@ -73,32 +46,19 @@ function formatStage(type) {
 function AttackGraphPanel() {
   const [selectedNode, setSelectedNode] = useState(null)
 
-  // Query 1:
-  // Discover the latest session for the attacker.
   const {
     data: sessionData,
     isLoading: isSessionLoading,
     isError: isSessionError,
-  } = useQuery({
-    queryKey: ["latest-session", SOURCE_IP],
-    queryFn: fetchLatestSession,
-    refetchInterval: 3000,
-  })
+  } = useLatestSession()
 
   const sessionId = sessionData?.session_id
 
-  // Query 2:
-  // Fetch the graph for the discovered session.
   const {
     data,
     isLoading: isGraphLoading,
     isError: isGraphError,
-  } = useQuery({
-    queryKey: ["attack-graph", sessionId],
-    queryFn: () => fetchAttackGraph(sessionId),
-    enabled: Boolean(sessionId),
-    refetchInterval: 3000,
-  })
+  } = useAttackGraph(sessionId)
 
   const isLoading = isSessionLoading || isGraphLoading
   const isError = isSessionError || isGraphError

@@ -1,4 +1,6 @@
 import logging
+import threading
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,13 +10,26 @@ from agent.runner import process_event
 
 from agent.cti.models import CTIEvent
 from agent.cti.service import enrich_event, store
+from agent.cti.watcher import watch_file
 
 from agent.cti.graph_service import build_attack_graph
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    watcher_thread = threading.Thread(
+        target=watch_file,
+        args=("/var/log/suricata/eve.json",),
+        daemon=True,
+    )
+    watcher_thread.start()
+    yield
 
 app = FastAPI(
     title="DeceptionX Agent",
     docs_url=None,
     redoc_url=None,
+    lifespan=lifespan,
 )
 
 app.add_middleware(

@@ -33,3 +33,5 @@ potctl/potctl.db-wal
 cti.db
 __pycache__/
 .pytest_cache/
+
+honeypots/http-decoy/logs/

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { CTI_API_URL, SOURCE_IP } from "../config"
 
 async function fetchCTIEvents() {
   const sessionId = import.meta.env.VITE_CTI_SESSION_ID
@@ -8,7 +9,7 @@ async function fetchCTIEvents() {
   }
 
   const response = await fetch(
-    `http://127.0.0.1:8090/cti/${encodeURIComponent(sessionId)}`
+    `${CTI_API_URL}/sessions/latest/${encodeURIComponent(SOURCE_IP)}`
   )
 
   if (!response.ok) {

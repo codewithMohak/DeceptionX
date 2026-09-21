@@ -3,9 +3,7 @@ from pathlib import Path
 from agent.cti.cowrie import parse_cowrie_line
 
 
-LOG_PATH = Path(
-    "honeypots/ssh-cowrie/cowrie-logs/cowrie.json"
-)
+LOG_PATH = Path(__file__).parent.parent.parent / "honeypots" / "ssh-cowrie" / "cowrie-logs" / "cowrie.json"
 
 
 def test_cowrie_log():

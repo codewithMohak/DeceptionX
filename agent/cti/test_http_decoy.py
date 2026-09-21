@@ -3,9 +3,7 @@ from pathlib import Path
 from agent.cti.http_decoy import parse_http_line
 
 
-LOG_PATH = Path(
-    "honeypots/http-decoy/http-logs/requests.json"
-)
+LOG_PATH = Path(__file__).parent.parent.parent / "honeypots" / "http-decoy" / "logs" / "requests.json"
 
 
 def test_http_log():

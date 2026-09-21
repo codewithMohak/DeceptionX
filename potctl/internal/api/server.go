@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/moby/moby/api/types/container"
+	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 )
 
@@ -227,9 +228,24 @@ func writeJSON(w http.ResponseWriter, status int, value interface{}) {
 
 //traffic routing
 
-func (s *Server) Router() *http.ServeMux {
+func (s *Server) Router() http.Handler {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/state", s.handleState)
 	mux.HandleFunc("/toggle", s.handleToggle)
-	return mux
+
+	return cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"http://localhost:5173",
+		},
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodOptions,
+		},
+		AllowedHeaders: []string{
+			"Content-Type",
+			"X-API-Key",
+		},
+	}).Handler(mux)
 }

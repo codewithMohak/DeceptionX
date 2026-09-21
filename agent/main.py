@@ -89,6 +89,21 @@ def add_test_cti_event(event: CTIEvent) -> dict:
         "event": result,
     }
 
+@app.get("/sessions/latest/{src_ip}")
+def get_latest_session(src_ip: str) -> dict:
+    session_id = store.get_latest_session(src_ip)
+
+    if session_id is None:
+        return {
+            "src_ip": src_ip,
+            "session_id": None,
+        }
+
+    return {
+        "src_ip": src_ip,
+        "session_id": session_id,
+    }
+
 
 
 if __name__ == "__main__":

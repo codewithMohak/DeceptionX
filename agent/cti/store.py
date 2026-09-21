@@ -111,3 +111,21 @@ class CTIStore:
             )
 
         return events
+
+def get_latest_session(self, src_ip: str) -> str | None:
+    with sqlite3.connect(self.db_path) as connection:
+        row = connection.execute(
+            """
+            SELECT session_id
+            FROM cti_events
+            WHERE src_ip = ?
+            ORDER BY timestamp DESC
+            LIMIT 1
+            """,
+            (src_ip,),
+        ).fetchone()
+
+    if row is None:
+        return None
+
+    return row[0]

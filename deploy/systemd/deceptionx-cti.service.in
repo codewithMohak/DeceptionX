@@ -1,0 +1,26 @@
+[Unit]
+Description=DeceptionX CTI ingestion service
+Documentation=https://github.com/codewithMohak/DeceptionX
+After=suricata.service
+Wants=suricata.service
+
+[Service]
+Type=simple
+
+User=@SERVICE_USER@
+Group=@SERVICE_USER@
+
+WorkingDirectory=@DECEPTIONX_DIR@
+
+Environment="SURICATA_LOG_PATH=/var/log/suricata/eve.json"
+
+ExecStart=/usr/bin/python3 -m agent.main
+
+Restart=on-failure
+RestartSec=5
+
+# Give the service a clean shutdown window.
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

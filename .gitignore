@@ -35,3 +35,24 @@ __pycache__/
 .pytest_cache/
 
 honeypots/http-decoy/logs/
+
+# =========================
+# Runtime state / telemetry
+# =========================
+
+offset.state
+
+cti.db
+cti.db-shm
+cti.db-wal
+
+honeypots/ssh-cowrie/cowrie-logs/*
+!honeypots/ssh-cowrie/cowrie-logs/.gitkeep
+
+honeypots/http-decoy/logs/
+
+potctl/potctl.db
+potctl/potctl.db-shm
+potctl/potctl.db-wal
+
+potctl/bin/

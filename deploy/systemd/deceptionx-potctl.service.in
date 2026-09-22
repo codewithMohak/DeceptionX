@@ -1,0 +1,26 @@
+[Unit]
+Description=DeceptionX Potctl control plane
+Documentation=https://github.com/codewithMohak/DeceptionX
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+
+User=@SERVICE_USER@
+Group=@SERVICE_USER@
+
+WorkingDirectory=@DECEPTIONX_DIR@/potctl
+
+EnvironmentFile=/etc/deceptionx/potctl.env
+
+ExecStart=@DECEPTIONX_DIR@/potctl/bin/potctl
+
+Restart=on-failure
+RestartSec=5
+
+# Give the service a clean shutdown window.
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

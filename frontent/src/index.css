@@ -1,1 +1,56 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+@theme {
+  --color-brand: #3b82f6; /* Blue 500 */
+  --color-background: #0a0a0a;
+  --color-panel: #16181d;
+  --color-panel-hover: #1e2128;
+  --color-border: #272a30;
+  
+  --color-success: #10b981; /* Emerald 500 */
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-success-border: rgba(16, 185, 129, 0.2);
+  
+  --color-warning: #f59e0b; /* Amber 500 */
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(245, 158, 11, 0.2);
+  
+  --color-danger: #f43f5e; /* Rose 500 */
+  --color-danger-bg: rgba(244, 63, 94, 0.1);
+  --color-danger-border: rgba(244, 63, 94, 0.2);
+
+  --color-info: #0ea5e9; /* Sky 500 */
+  --color-info-bg: rgba(14, 165, 233, 0.1);
+  --color-info-border: rgba(14, 165, 233, 0.2);
+
+  --color-muted: #6b7280; /* Gray 500 */
+  --color-muted-bg: rgba(107, 114, 128, 0.1);
+  --color-muted-border: rgba(107, 114, 128, 0.2);
+}
+
+body {
+  background-color: var(--color-background);
+  color: #f3f4f6; /* Gray 100 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}

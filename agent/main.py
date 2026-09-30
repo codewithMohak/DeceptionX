@@ -11,20 +11,53 @@ from agent.runner import process_event
 
 from agent.cti.models import CTIEvent
 from agent.cti.service import enrich_event, store
-from agent.cti.watcher import watch_file
+from agent.cti.watcher import (
+    watch_suricata,
+    watch_cowrie,
+    watch_http,
+)
 
 from agent.cti.graph_service import build_attack_graph
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    log_path = os.getenv("SURICATA_LOG_PATH", "/var/log/suricata/eve.json")
-    watcher_thread = threading.Thread(
-        target=watch_file,
-        args=(log_path,),
-        daemon=True,
+    suricata_path = os.getenv(
+        "SURICATA_LOG_PATH",
+        "/var/log/suricata/eve.json",
     )
-    watcher_thread.start()
+
+    cowrie_path = os.getenv(
+        "COWRIE_LOG_PATH",
+        "honeypots/ssh-cowrie/cowrie-logs/cowrie.json",
+    )
+
+    http_path = os.getenv(
+        "HTTP_DECOY_LOG_PATH",
+        "honeypots/http-decoy/logs/requests.json",
+    )
+
+    watchers = [
+        threading.Thread(
+            target=watch_suricata,
+            args=(suricata_path,),
+            daemon=True,
+        ),
+        threading.Thread(
+            target=watch_cowrie,
+            args=(cowrie_path,),
+            daemon=True,
+        ),
+        threading.Thread(
+            target=watch_http,
+            args=(http_path,),
+            daemon=True,
+        ),
+    ]
+
+    for watcher in watchers:
+        watcher.start()
+
     yield
 
 app = FastAPI(

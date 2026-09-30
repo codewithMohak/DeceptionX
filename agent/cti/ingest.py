@@ -6,6 +6,34 @@ from agent.cti.service import enrich_event
 from agent.cti.session import SessionManager
 from agent.cti.dedup import event_fingerprint
 
+from agent.cti.cowrie import parse_cowrie_line
+from agent.cti.http_decoy import parse_http_line
+from agent.cti.telemetry import TelemetryEvent
+from agent.cti.store import CTIStore
+
+telemetry_store = CTIStore()
+
+def ingest_cowrie_line(line: str) -> TelemetryEvent | None:
+    event = parse_cowrie_line(line)
+
+    if event is None:
+        return None
+
+    telemetry_store.add_telemetry(event)
+
+    return event
+
+
+def ingest_http_line(line: str) -> TelemetryEvent | None:
+    event = parse_http_line(line)
+
+    if event is None:
+        return None
+
+    telemetry_store.add_telemetry(event)
+
+    return event
+
 
 session_manager = SessionManager()
 

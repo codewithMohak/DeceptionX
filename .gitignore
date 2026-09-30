@@ -11,7 +11,7 @@ __pycache__/
 # Test / tooling cache
 .pytest_cache/
 .mypy_cache/
-
+offsets/*.offset
 
 # =========================
 # Secrets / Environment

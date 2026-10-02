@@ -125,6 +125,25 @@ def get_cti(session_id: str) -> dict:
         "events": events,
     }
 
+@app.get("/telemetry/recent")
+def get_recent_telemetry(limit: int = 50) -> dict:
+    events = store.get_recent_telemetry(limit=limit)
+
+    return {
+        "events": events,
+    }
+
+
+@app.get("/telemetry/{session_id}")
+def get_telemetry(session_id: str) -> dict:
+    events = store.get_telemetry_by_session(session_id)
+
+    return {
+        "session_id": session_id,
+        "events": events,
+    }
+
+
 @app.get("/graph/{session_id}")
 def get_attack_graph(session_id: str) -> dict:
     graph = build_attack_graph(session_id)
@@ -154,6 +173,7 @@ def get_latest_session(src_ip: str) -> dict:
         "src_ip": src_ip,
         "session_id": session_id,
     }
+
 
 
 

@@ -9,7 +9,7 @@ app = Flask(__name__)
 def catch_all(path):
 
     log = {
-        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         "src_ip": request.remote_addr,
         "method": request.method,
         "path": "/" + path,

@@ -22,6 +22,9 @@ def watch_file(
     file_path = Path(path)
     state_path = Path(state_file)
 
+# Ensure the directory for the offset file exists.
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+
     print(f"Watching {source}: {file_path}")
 
     with file_path.open("r", encoding="utf-8") as file:

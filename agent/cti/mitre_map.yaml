@@ -6,3 +6,13 @@
 2022973: null
 2228000: null
 2260002: null
+
+# ET SCAN Possible Nmap User-Agent Observed
+# The alert establishes active network probing, but not a
+# more specific scanning objective.
+
+2024364: 
+  technique_id : "T1595"
+  technique_name: "Active Scanning"
+  tactic : "Reconnaissance"
+  

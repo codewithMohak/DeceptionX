@@ -24,10 +24,18 @@ def build_attack_graph(session_id: str) -> AttackGraph:
         node_id = f"event-{index}"
 
         node = AttackGraphNode(
-            id=node_id,
-            label=f"{stage}: {event['signature']}",
-            type=stage,
-        )
+        id=node_id,
+        label=(
+            event["technique_name"]
+            if event.get("technique_name")
+            else f"{stage}: {event['signature']}"
+        ),
+        type=stage,
+        technique_id=event.get("technique_id"),
+        technique_name=event.get("technique_name"),
+        tactic=event.get("tactic"),
+        signature=event.get("signature"),
+    )
 
         nodes.append(node)
 

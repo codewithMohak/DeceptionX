@@ -19,6 +19,15 @@ def ingest_cowrie_line(line: str) -> TelemetryEvent | None:
     if event is None:
         return None
 
+    session_id = session_manager.get_session_id(
+        event.src_ip,
+        event.timestamp,
+    )
+
+    event = event.model_copy(
+        update={"session_id": session_id}
+    )
+
     telemetry_store.add_telemetry(event)
 
     return event
@@ -29,6 +38,15 @@ def ingest_http_line(line: str) -> TelemetryEvent | None:
 
     if event is None:
         return None
+
+    session_id = session_manager.get_session_id(
+        event.src_ip,
+        event.timestamp,
+    )
+
+    event = event.model_copy(
+        update={"session_id": session_id}
+    )
 
     telemetry_store.add_telemetry(event)
 

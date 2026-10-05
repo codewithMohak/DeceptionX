@@ -61,14 +61,23 @@ def test_process_rejects_invalid_event():
 
 def test_watcher_starts_on_startup():
     from unittest.mock import patch
-    
+
     with patch("agent.main.threading.Thread") as mock_thread:
         # Trigger the lifespan context manager
         with TestClient(app):
             pass
-            
-        mock_thread.assert_called_once()
-        args, kwargs = mock_thread.call_args
-        assert kwargs["target"].__name__ == "watch_file"
-        assert kwargs["daemon"] is True
-        mock_thread.return_value.start.assert_called_once()
+
+        assert mock_thread.call_count == 3
+
+        targets = [
+            call.kwargs["target"].__name__
+            for call in mock_thread.call_args_list
+        ]
+
+        assert "watch_suricata" in targets
+        assert "watch_cowrie" in targets
+        assert "watch_http" in targets
+
+        # Every watcher thread must run as a daemon
+        for call in mock_thread.call_args_list:
+            assert call.kwargs["daemon"] is True

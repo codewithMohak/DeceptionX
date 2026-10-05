@@ -160,21 +160,15 @@ def add_test_cti_event(event: CTIEvent) -> dict:
     }
 
 @app.get("/sessions/latest/{src_ip}")
-def get_latest_session(src_ip: str) -> dict:
-    session_id = store.get_latest_session(src_ip)
+def get_latest_session(src_ip: str):
+    events = store.get_latest_by_src_ip(src_ip)
 
-    if session_id is None:
-        return {
-            "src_ip": src_ip,
-            "session_id": None,
-        }
+    if not events:
+        raise HTTPException(status_code=404, detail="No CTI session found")
 
     return {
-        "src_ip": src_ip,
-        "session_id": session_id,
+        "session_id": events[0]["session_id"],
     }
-
-
 
 
 if __name__ == "__main__":

@@ -11,13 +11,10 @@ def parse_cowrie_line(line: str) -> TelemetryEvent | None:
 
     timestamp = data.get("timestamp")
     src_ip = data.get("src_ip")
-    cowrie_session = data.get("session")
     event_id = data.get("eventid")
 
-    if not timestamp or not src_ip or not cowrie_session:
+    if not timestamp or not src_ip:
         return None
-
-    session_id = f"{src_ip}:{cowrie_session}"
 
     if event_id == "cowrie.login.success":
         username = data.get("username")
@@ -26,7 +23,7 @@ def parse_cowrie_line(line: str) -> TelemetryEvent | None:
             return None
 
         return TelemetryEvent(
-            session_id=session_id,
+            session_id="",
             timestamp=timestamp,
             src_ip=src_ip,
             source="cowrie",
@@ -41,7 +38,7 @@ def parse_cowrie_line(line: str) -> TelemetryEvent | None:
             return None
 
         return TelemetryEvent(
-            session_id=session_id,
+            session_id="",
             timestamp=timestamp,
             src_ip=src_ip,
             source="cowrie",
